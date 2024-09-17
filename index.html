@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Lucky Draw Number Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        #result {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 2rem 0;
+            min-height: 60px;
+        }
+        .digit {
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #a0a0a0);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 
+                inset 2px 2px 5px rgba(255,255,255,0.4),
+                inset -2px -2px 5px rgba(0,0,0,0.4),
+                5px 5px 10px rgba(0,0,0,0.2);
+            text-shadow: 1px 1px 1px rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .digit::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0) 70%);
+            transform: rotate(45deg);
+        }
+        .top-left-buttons {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            font-size: 1rem;
+            padding: 0.7rem 1.5rem;
+            margin: 0.5rem;
+            cursor: pointer;
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            background-color: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        #clearBtn {
+            background-color: rgba(244, 67, 54, 0.7);
+        }
+        #clearBtn:hover {
+            background-color: rgba(244, 67, 54, 0.8);
+        }
+        #settingsBtn {
+            background-color: rgba(33, 150, 243, 0.7);
+        }
+        #settingsBtn:hover {
+            background-color: rgba(33, 150, 243, 0.8);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .close:hover {
+            color: #000;
+        }
+        input {
+            font-size: 1rem;
+            padding: 0.5rem;
+            margin: 0.5rem;
+            width: 100px;
+            border: none;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        #drawBoxes {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 2rem;
+        }
+        .draw-box {
+            width: 120px;
+            height: 80px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #fff;
+            box-shadow: 
+                inset 2px 2px 5px rgba(255,255,255,0.1),
+                inset -2px -2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .draw-box.filled {
+            background: linear-gradient(145deg, #ffd700, #ffa500);
+            color: #333;
+            font-weight: bold;
+            box-shadow: 
+                inset 2px 2px 5px rgba(255,255,255,0.5),
+                inset -2px -2px 5px rgba(0,0,0,0.1),
+                5px 5px 10px rgba(0,0,0,0.2);
+        }
+        #saveSettingsBtn {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        #saveSettingsBtn:hover {
+            background-color: #45a049;
+        }
+        footer {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.7);
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .range-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .range-inputs input {
+            width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-left-buttons">
+            <button id="settingsBtn">Settings</button>
+            <button id="clearBtn">Clear</button>
+        </div>
+        <h1>Lucky Draw Number Picker</h1>
+        <div id="result"></div>
+        <button id="generateBtn">Generate Number</button>
+        <div id="drawBoxes"></div>
+        <footer>© 2024 Meanaviyal. Fully Generated using AI.</footer>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Settings</h2>
+            <div>
+                <label for="rangeInputs">Range:</label>
+                <div class="range-inputs" id="rangeInputs">
+                    <input type="number" id="minInput" placeholder="Min" value="0">
+                    <input type="number" id="maxInput" placeholder="Max" value="9999">
+                </div>
+            </div>
+            <div>
+                <label for="drawsInput">Number of Draws:</label>
+                <input type="number" id="drawsInput" placeholder="Draws" value="5" min="1">
+            </div>
+            <button id="saveSettingsBtn">Save Settings</button>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const result = document.getElementById('result');
+        const generateBtn = document.getElementById('generateBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const minInput = document.getElementById('minInput');
+        const maxInput = document.getElementById('maxInput');
+        const drawsInput = document.getElementById('drawsInput');
+        const drawBoxes = document.getElementById('drawBoxes');
+        const modal = document.getElementById('settingsModal');
+        const closeBtn = document.getElementsByClassName('close')[0];
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+
+        let usedNumbers = new Set();
+        let min = 0;
+        let max = 9999;
+        let numDraws = 5;
+        let maxDraws;
+
+        function updateSettings() {
+            min = parseInt(minInput.value);
+            max = parseInt(maxInput.value);
+            numDraws = parseInt(drawsInput.value);
+            maxDraws = max - min + 1;
+            resetAndClear();
+        }
+
+        function resetAndClear() {
+            usedNumbers.clear();
+            createDrawBoxes();
+            createInitialBalls();
+            updateGenerateButton();
+        }
+
+        function createDrawBoxes() {
+            drawBoxes.innerHTML = '';
+            for (let i = 0; i < numDraws; i++) {
+                const box = document.createElement('div');
+                box.classList.add('draw-box');
+                drawBoxes.appendChild(box);
+            }
+        }
+
+        function createInitialBalls() {
+            result.innerHTML = '';
+            const digitCount = getDigitCount(max);
+            for (let i = 0; i < digitCount; i++) {
+                const digitElement = document.createElement('div');
+                digitElement.classList.add('digit');
+                digitElement.textContent = '?';
+                result.appendChild(digitElement);
+            }
+        }
+
+        function generateNumber() {
+            if (usedNumbers.size >= maxDraws) {
+                showToast('All possible numbers have been generated!');
+                return null;
+            }
+
+            if (usedNumbers.size >= numDraws) {
+                showToast('Maximum configured draws reached!');
+                return null;
+            }
+
+            let num;
+            do {
+                num = Math.floor(Math.random() * (max - min + 1)) + min;
+            } while (usedNumbers.has(num));
+
+            usedNumbers.add(num);
+            return num;
+        }
+
+        function displayNumber(number) {
+            result.innerHTML = '';
+            const digits = number.toString().padStart(getDigitCount(max), '0').split('');
+            digits.forEach((digit, index) => {
+                const digitElement = document.createElement('div');
+                digitElement.classList.add('digit');
+                digitElement.textContent = digit;
+                result.appendChild(digitElement);
+
+                gsap.from(digitElement, {
+                    duration: 0.5,
+                    opacity: 0,
+                    scale: 0,
+                    rotation: 720,
+                    delay: index * 0.1,
+                    ease: "back.out(1.7)"
+                });
+            });
+        }
+
+        function getDigitCount(num) {
+            return Math.max(2, Math.floor(Math.log10(num)) + 1);
+        }
+
+        function updateGenerateButton() {
+            if (usedNumbers.size >= numDraws || usedNumbers.size >= maxDraws) {
+                generateBtn.textContent = "Clear and Restart";
+            } else {
+                generateBtn.textContent = "Generate Number";
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        generateBtn.addEventListener('click', () => {
+            if (usedNumbers.size >= numDraws || usedNumbers.size >= maxDraws) {
+                resetAndClear();
+            } else {
+                const number = generateNumber();
+                if (number !== null) {
+                    displayNumber(number);
+                    
+                    const emptyBox = Array.from(drawBoxes.children).find(box => !box.classList.contains('filled'));
+                    if (emptyBox) {
+                        emptyBox.textContent = number;
+                        emptyBox.classList.add('filled');
+                        gsap.from(emptyBox, {
+                            duration: 0.5,
+                            scale: 0.5,
+                            opacity: 0,
+                            ease: "elastic.out(1, 0.3)"
+                        });
+                    }
+                }
+            }
+            updateGenerateButton();
+        });
+
+        clearBtn.addEventListener('click', resetAndClear);
+
+        settingsBtn.addEventListener('click', () => {
+            modal.style.display = "block";
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = "none";
+        });
+
+        saveSettingsBtn.addEventListener('click', () => {
+            updateSettings();
+            modal.style.display = "none";
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        });
+
+        minInput.addEventListener('change', resetAndClear);
+        maxInput.addEventListener('change', resetAndClear);
+
+        // Initialize
+        updateSettings();
+    });
+    </script>
+</body>
+</html>
